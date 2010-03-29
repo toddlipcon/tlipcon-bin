@@ -1,0 +1,43 @@
+#!/bin/bash
+
+EDITOR=${EDITOR:-vi}
+
+if [[ $# -ne 2 ]]; then
+  echo "Syntax: $0 debfile controlscript"
+  exit 1
+fi
+
+DEBFILE="$1"
+CONTROLFILE="$2"
+TMPDIR=`mktemp -d /tmp/deb.XXXXXXXXXX` || exit 1
+OUTPUT=`basename "$DEBFILE" .deb`.modfied.deb
+
+if [[ -e "$OUTPUT" ]]; then
+  echo "$OUTPUT exists."
+  rm -r "$TMPDIR"
+  exit 1
+fi
+
+dpkg-deb -x "$DEBFILE" "$TMPDIR"
+dpkg-deb --control "$DEBFILE" "$TMPDIR"/DEBIAN
+
+if [[ ! -e "$TMPDIR"/DEBIAN/$CONTROLFILE ]]; then
+  echo DEBIAN/$CONTROLFILE not found.
+
+  rm -r "$TMPDIR"
+  exit 1
+fi
+
+CONTROL="$TMPDIR"/DEBIAN/$CONTROLFILE
+
+MOD=`stat -c "%y" "$CONTROL"`
+$EDITOR "$CONTROL"
+
+if [[ "$MOD" == `stat -c "%y" "$CONTROL"` ]]; then
+  echo Not modfied.
+else
+  echo Building new deb...
+  dpkg -b "$TMPDIR" "$OUTPUT"
+fi
+
+rm -r "$TMPDIR"
