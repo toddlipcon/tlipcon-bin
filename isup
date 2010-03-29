@@ -1,0 +1,7 @@
+#!/bin/sh
+
+if curl -s "$@" > /dev/null ; then
+  echo $@ up
+else
+  echo $@ down
+fi
