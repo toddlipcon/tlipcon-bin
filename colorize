@@ -1,0 +1,34 @@
+#!/usr/bin/env python
+import sys
+import re
+
+COLORS = {
+  'bold': '\033[1m',
+  'italic': '\033[3m',
+  'underline': '\033[4m',
+  'inverse': '\033[7m',
+  'red': '\033[31m',
+  'green': '\033[32m',
+  'yellow': '\033[33m',
+  'blue': "\033[34m",
+  'end':  "\033[0m"
+}
+
+if len(sys.argv) != 2:
+  print >>sys.stderr, "usage: %s colorhash" % (sys.argv[0])
+  sys.exit(1)
+
+colors = eval(sys.argv[1])
+
+def make_repl(color):
+  parts = color.split(",")
+  return ("".join(COLORS[part.strip()] for part in parts) +
+      r'\g<0>' + COLORS['end'])
+
+pairs = [(re.compile(regex), make_repl(colorspec))
+           for regex,colorspec in colors.iteritems()]
+
+for line in sys.stdin.xreadlines():
+  for r, repl in pairs:
+    line = re.sub(r, repl, line)
+  print line,
