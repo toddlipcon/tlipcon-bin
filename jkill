@@ -1,0 +1,15 @@
+#!/bin/bash
+
+if [[ $1 == -* ]]; then
+  SIGNAL=$1
+  shift
+fi
+
+
+PIDS=$(jps | grep "$@" | awk '{print $1}')
+if [ -z "$PIDS" ]; then
+  echo pid for $@ not found
+  exit 1
+else
+  kill $SIGNAL $PIDS
+fi
