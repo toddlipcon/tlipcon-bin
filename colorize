@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import sys
 import re
+from optparse import OptionParser
 
 COLORS = {
   'bold': '\033[1m',
@@ -14,11 +15,18 @@ COLORS = {
   'end':  "\033[0m"
 }
 
-if len(sys.argv) != 2:
-  print >>sys.stderr, "usage: %s colorhash" % (sys.argv[0])
+
+parser = OptionParser()
+parser.add_option("-o", "--only-colored-lines", dest="only_colored", action="store_true")
+parser.usage = "%s <color hash>"
+
+options, args = parser.parse_args()
+
+if len(args) != 1:
+  options.print_help(sys.stderr)
   sys.exit(1)
 
-colors = eval(sys.argv[1])
+colors = eval(args[0])
 
 def make_repl(color):
   parts = color.split(",")
@@ -28,7 +36,12 @@ def make_repl(color):
 pairs = [(re.compile(regex), make_repl(colorspec))
            for regex,colorspec in colors.iteritems()]
 
+
 for line in sys.stdin.xreadlines():
+  made_sub = 0
   for r, repl in pairs:
-    line = re.sub(r, repl, line)
-  print line,
+    line,count = re.subn(r, repl, line)
+    made_sub += count
+
+  if not options.only_colored or made_sub > 0:
+    print line,
