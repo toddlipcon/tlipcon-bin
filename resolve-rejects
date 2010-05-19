@@ -1,0 +1,29 @@
+#!/bin/sh
+
+confirm() {
+  read ret
+  if [ "$ret" != "n" ] && [ "ret" != "no" ]; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+run_resolve() {
+  rejfile=$1
+
+  vim -o $rejfile ${rejfile%.rej}
+  echo 'Resolved? [Y/n]'
+  if confirm ; then
+    rm $rejfile
+  fi
+}
+
+
+for rejfile in $(find . -name \*.rej) ; do
+  echo "Resolve $rejfile ?"
+  read ret
+  if [ "$ret" != "n" ] && [ "$ret" != "no" ] ; then
+    run_resolve $rejfile
+  fi
+done
