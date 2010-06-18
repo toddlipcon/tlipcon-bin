@@ -1,0 +1,12 @@
+#!/bin/bash
+
+TMP=$(mktemp)
+cat /dev/stdin > $TMP
+
+vim $TMP < /dev/tty > /dev/tty
+ret=$?
+if [ "$ret" == "0" ]; then
+  cat $TMP
+fi
+exit $ret
+
