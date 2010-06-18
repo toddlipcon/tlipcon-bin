@@ -1,0 +1,65 @@
+#!/usr/bin/python
+
+import sys
+import re
+import os
+import tempfile
+import subprocess
+
+def do_user():
+  if len(sys.argv) != 2:
+    raise Exception("usage: %s fromcommit..tocommit")
+  commit_range = sys.argv[1]
+  tmp = tempfile.NamedTemporaryFile(mode="w+")
+
+  subprocess.check_call([
+    "git", "log", "-z", commit_range],
+    stdout=tmp)
+  tmp.flush()
+  
+  # Allow user to edit log
+  subprocess.check_call([
+    os.getenv("EDITOR", "vim"),
+    tmp.name])
+
+  # Run filter branch
+  subprocess.check_call([
+    "git", "filter-branch",
+    "-f",
+    "--msg-filter",
+    "ACT_AS=filter %s %s" % (sys.argv[0], tmp.name),
+    commit_range])
+  tmp.close()
+
+def apply_changes():
+  """Called by filter-branch to apply the changes"""
+  method = sys.argv[1]
+  
+  f = file(sys.argv[1])
+  data = f.read()
+  f.close()
+  
+  lookfor = os.getenv("GIT_COMMIT")
+  
+  entries = data.split("\0")
+  by_hash = dict()
+  for e in entries:
+    if lookfor not in e:
+      next
+    meta,log = e.split("\n\n", 1)
+    meta_lines = meta.split("\n")
+    commit = meta_lines[0].split(" ")[1]
+    if commit == lookfor:
+      print re.sub(r'^ {0,4}', '', log)
+
+
+act_as = os.getenv("ACT_AS", "user")
+
+if act_as == "filter":
+  apply_changes()
+elif act_as == "user":
+  do_user()
+else:
+  raise Exception("Unknown call type: " + act_as)
+
+
