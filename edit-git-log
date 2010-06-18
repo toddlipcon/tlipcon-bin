@@ -50,7 +50,7 @@ def apply_changes():
     meta_lines = meta.split("\n")
     commit = meta_lines[0].split(" ")[1]
     if commit == lookfor:
-      print re.sub(r'^ {0,4}', '', log)
+      print re.sub(r'(?m)^ {0,4}', '', log)
 
 
 act_as = os.getenv("ACT_AS", "user")
