@@ -1,0 +1,70 @@
+#!/bin/bash
+
+PID=$1
+if [ -z "$PID" ]; then
+  echo usage: $0 pid
+  exit 1
+fi
+
+determine_exe() {
+  PID=$1
+
+  # Try looking in proc for full path
+  res=$(readlink -f /proc/$PID/exe)
+  if [ "$?" -eq 0 ]; then
+    echo $res
+    return
+  fi
+
+  # Might not have permissions to do that, see if command
+  # line is an absolute path
+  argv0=$(cut -d "$(printf "\x00")" -f 1 /proc/$PID/cmdline)
+  if [[ "$argv0" == /* ]]; then
+    echo $argv0
+    return
+  fi
+  return -1
+}
+
+
+EXE=$(determine_exe $PID)
+if [ -z "$EXE" ] || [ ! -x "$EXE" ]; then
+  echo Could not determine executable path for pid $PID
+  exit 1
+fi
+
+EXE_BASE=$(basename "$EXE")
+if [ "$EXE_BASE" != "java" ]; then
+  echo Pid $PID does not appear to be a JVM.
+  echo Executable $EXE is not java!
+fi
+
+case "$EXE" in
+  */jre/bin/java)
+    JAVA_HOME=${EXE%jre/bin/java}
+    JSTACK="$JAVA_HOME/bin/jstack"
+    ;;
+  */bin/java)
+    JSTACK="$(dirname $EXE)/jstack"
+    ;;
+  *)
+    echo Executable $EXE does not appear to be in the normal
+    echo Sun JRE directory layout. Expected .../jre/bin/java
+    exit 1
+    ;;
+esac
+
+if [ ! -x "$JSTACK" ]; then
+  echo No jstack found at $JSTACK
+  JSTACK=$(which jstack 2>/dev/null)
+  if [ "$?" -eq 0 ]; then
+    echo Will attempt to use the one on your path: $JSTACK
+  else
+    echo Also, none found on path!
+    exit 1
+  fi
+fi
+
+JAVA_UID=$(cat /proc/$PID/status  | grep Uid | awk '{print $2}')
+
+sudo -u#$JAVA_UID $JSTACK $PID  
