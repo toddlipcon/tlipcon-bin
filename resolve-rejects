@@ -11,11 +11,21 @@ confirm() {
 
 run_resolve() {
   rejfile=$1
+  file=${rejfile%.rej}
+  spawned=""
+  if [ -n "$DISPLAY" ]; then
+    xterm -e "git log -p $file" &
+    spawned="$!"
+  fi
 
-  vim -o $rejfile ${rejfile%.rej}
+  vim -o $rejfile $file
   echo 'Resolved? [Y/n]'
   if confirm ; then
     rm $rejfile
+  fi
+
+  if [ -n "$spawned" ]; then
+    kill $spawned
   fi
 }
 
