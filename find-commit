@@ -4,7 +4,7 @@ pattern="$@"
 
 git show-ref | grep heads | (
   while read hash ref ; do
-    if git log -n10 $hash | grep -q $pattern > /dev/null ; then
+    if git log -n100 $hash | grep -q $pattern > /dev/null ; then
       echo $ref
     fi
   done
