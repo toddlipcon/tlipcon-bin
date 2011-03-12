@@ -1,0 +1,43 @@
+#!/bin/bash
+
+NUM_COMMITS=4
+TEST_DIR=src/test
+
+while [ $# -gt 0 ]; do
+  case $1 in
+    -n)
+      shift
+      NUM_COMMITS=$1
+      ;;
+    *)
+      echo bad param: $1
+      exit 1
+      ;;
+  esac
+  shift
+done
+
+if grep -q test.hdfs.commit.tests.file build.xml ; then
+  TEST_TARGET=run-commit-test
+  TESTFILE_PROPERTY=test.hdfs.commit.tests.file
+elif grep -q test.mapred.commit.tests.file build.xml ; then
+  TEST_TARGET=run-commit-test
+  TESTFILE_PROPERTY=test.mapred.commit.tests.file
+elif grep -q test.all.tests.file build.xml ; then
+  TESTFILE_PROPERTY=test.all.tests.file
+  if grep -q '"run-test-core"' build.xml ; then
+    TEST_TARGET=run-test-core
+  else
+    TEST_TARGET=test-core
+  fi
+else
+  echo No idea what target/property to use
+  exit 1
+fi
+
+
+
+(git whatchanged -n$NUM_COMMITS src/test/ ; git diff --numstat src/test ) | \
+  egrep -o 'Test.*.java' | sed 's,^,**/,g' > /tmp/recent-tests
+
+ant -D${TESTFILE_PROPERTY}=/tmp/recent-tests $TEST_TARGET
