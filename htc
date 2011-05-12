@@ -1,0 +1,4 @@
+#!/bin/bash
+set -e
+
+ant test-core -Dtestcase=$1
