@@ -36,8 +36,19 @@ else
 fi
 
 
+if git rev-parse --show-cdup 2> /dev/null ; then
+  (git whatchanged -n$NUM_COMMITS src/test/ ; git diff --numstat src/test ) | \
+    egrep -o '/Test.*.java' | sed 's,^,**/,g' > /tmp/recent-tests
+else
+  REV_FOR_DIFF=$(svn log -l $NUM_COMMITS src/test | egrep -o '^r[0-9]+' | tail -1)
+  (svn diff -r $REV_FOR_DIFF:HEAD --summarize ; svn stat ) | \
+    egrep -o '/Test.*.java' | sed 's,^,**/,g' > /tmp/recent-tests
+fi
 
-(git whatchanged -n$NUM_COMMITS src/test/ ; git diff --numstat src/test ) | \
-  egrep -o 'Test.*.java' | sed 's,^,**/,g' > /tmp/recent-tests
+echo Going to run the following tests:
+cat /tmp/recent-tests
+echo ----------
+sleep 1
+
 
 ant -D${TESTFILE_PROPERTY}=/tmp/recent-tests $TEST_TARGET
