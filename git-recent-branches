@@ -1,0 +1,9 @@
+#!/bin/bash
+#
+# Show git branches sorted such that most recently
+# touched ones are at the bottom.
+# eg usage: git-recent-branches | tail
+
+GITDIR=./$(git rev-parse --show-cdup)/.git
+
+(cd $GITDIR/refs/heads && find -type f | xargs ls -1tr) | sed 's,^./,,g'
