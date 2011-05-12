@@ -13,7 +13,7 @@ SUMMARY=$3
 if [[ $REVLIST == *.* ]]; then
   DESCRIPTION=$(git whatchanged $REVLIST)
   DIFF_CMD="git diff $REVLIST"
-  if [ -z $SUMMARY ]; then
+  if [ -z "$SUMMARY" ]; then
     echo Must provide a summary for a list of revisions
     exit 1
   fi
