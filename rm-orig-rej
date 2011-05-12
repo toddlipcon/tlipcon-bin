@@ -1,0 +1,5 @@
+#!/bin/bash
+#
+# Remove .orig and .rej files
+
+find . \( -name \*.orig -o -name \*.rej \) -exec rm {} \;
