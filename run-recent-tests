@@ -45,6 +45,9 @@ else
     egrep -o '/Test.*.java' | sed 's,^,**/,g' > /tmp/recent-tests
 fi
 
+sort /tmp/recent-tests | uniq > /tmp/recent-tests-sorted
+mv /tmp/recent-tests-sorted /tmp/recent-tests
+
 echo Going to run the following tests:
 cat /tmp/recent-tests
 echo ----------
