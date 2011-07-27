@@ -1,0 +1,44 @@
+#!/bin/bash -e
+
+RM_DIRS=false
+DRY_RUN=true
+
+while getopts "df" opt; do
+  case $opt in
+    d)
+      RM_DIRS=true
+      ;;
+    f)
+      DRY_RUN=false
+      ;;
+    n)
+      DRY_RUN=true
+      ;;
+    ?)
+      exit 1
+      ;;
+  esac
+done
+shift $[$OPTIND - 1]
+if [ $# -gt 0 ]; then
+  echo Invalid options: $* >&2
+  exit 1
+fi
+
+if $DRY_RUN ; then
+  echo Dry run -- pass -f to actually run
+  maybe_dry="echo Would "
+else
+  maybe_dry=
+fi
+
+svn stat | grep '^?' | sed 's,^? *,,' | (
+  while read ; do
+    file=$REPLY
+    if $RM_DIRS ; then
+      $maybe_dry rm -R "$file"
+    else
+      $maybe_dry rm "$file"
+    fi
+  done
+)
