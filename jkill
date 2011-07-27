@@ -6,7 +6,7 @@ if [[ $1 == -* ]]; then
 fi
 
 
-PIDS=$(jps | grep "$@" | awk '{print $1}')
+PIDS=$(jps | grep " $@\$" | awk '{print $1}')
 if [ -z "$PIDS" ]; then
   echo pid for $@ not found
   exit 1
