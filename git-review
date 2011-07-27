@@ -26,4 +26,9 @@ else
 fi
 
 
-post-review --description="$DESCRIPTION" --target-groups=platform --target-people="$REVIEWER" --diff-filename=<($DIFF_CMD) --summary="$SUMMARY"
+post-review --description="$DESCRIPTION" \
+  --target-groups=platform \
+  --target-people="$REVIEWER" \
+  --diff-filename=<($DIFF_CMD) \
+  --repository-url=git://github.sf.cloudera.com/CDH/hadoop.git \
+  --summary="$SUMMARY"
