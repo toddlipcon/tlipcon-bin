@@ -31,12 +31,15 @@ COLORS = {
 
 parser = OptionParser()
 parser.add_option("-o", "--only-colored-lines", dest="only_colored", action="store_true")
-parser.usage = "%s <color hash>"
+parser.usage = """%s <color hash>
+
+For example: colorize '{ "error": "red" }'
+"""
 
 options, args = parser.parse_args()
 
 if len(args) != 1:
-  options.print_help(sys.stderr)
+  parser.print_help(sys.stderr)
   sys.exit(1)
 
 colors = eval(args[0])
