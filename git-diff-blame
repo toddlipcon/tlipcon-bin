@@ -15,8 +15,8 @@ sub get_blame_prefix {
         return $1;
 }
 
-my ($oldrev, $newrev) = @ARGV;
-open($diff, '-|', 'git', '--no-pager', 'diff', $oldrev, $newrev) or die;
+my ($oldrev, $newrev, @paths) = @ARGV;
+open($diff, '-|', 'git', '--no-pager', 'diff', $oldrev, $newrev, @paths) or die;
 
 my ($pre, $post);
 my $filename;
