@@ -27,14 +27,23 @@ fi
 
 remote_url=$(
   git remote -v | egrep -o 'CDH/[a-zA-Z]+.git' | head -1)
-if [ -z "$remote_url" ]; then
-  echo 'could not figure out remote URL from remotes!'
-  exit 1
+if [ -n "$remote_url" ]; then
+  remote_url=git://github.sf.cloudera.com/$remote_url
+else
+  remote_url=$(
+    git remote -v | grep '^origin	' | grep push | awk '{print $2}')
+  if [ -z "$remote_url" ]; then
+    echo 'could not figure out remote URL from remotes!'
+    exit 1
+  fi
+  if [[ "$remote_url" =~ ^git@github.*cloudera.com:(.+)$ ]] ; then
+    remote_url=git://github.mtv.cloudera.com/${BASH_REMATCH[1]}
+  fi
 fi
 
 post-review --description="$DESCRIPTION" \
-  --target-groups=platform \
+  --target-groups=hadoop \
   --target-people="$REVIEWER" \
   --diff-filename=<($DIFF_CMD) \
-  --repository-url=git://github.sf.cloudera.com/$remote_url \
+  --repository-url=$remote_url \
   --summary="$SUMMARY"
